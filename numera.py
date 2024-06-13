@@ -1,5 +1,5 @@
 import tkinter as tk
-from tkinter import messagebox, simpledialog
+from tkinter import ttk
 import pandas as pd
 from sklearn.model_selection import train_test_split 
 from sklearn.linear_model import LinearRegression
@@ -9,11 +9,18 @@ import datetime
 import yfinance as yf
 import numpy as np
 
+# Define the Entry widgets as global variables
+tickerSymbolEntry = None
+forecastOutEntry = None
+displayDaysEntry = None
+
 def predict():
-    # Ask the user for the ticker symbol, the prediction period, and the number of days to display
-    tickerSymbol = simpledialog.askstring("Input", "Enter the ticker symbol:")
-    forecast_out = simpledialog.askinteger("Input", "Enter the prediction period (in days):")
-    display_days = simpledialog.askinteger("Input", "Enter the number of days to display:")
+    global tickerSymbolEntry, forecastOutEntry, displayDaysEntry
+
+    # Get the ticker symbol and the prediction period from the Entry widgets
+    tickerSymbol = tickerSymbolEntry.get()
+    forecast_out = int(forecastOutEntry.get())
+    display_days = int(displayDaysEntry.get())
 
     # Download historical data for desired ticker symbol
     tickerData = yf.Ticker(tickerSymbol)
@@ -51,6 +58,8 @@ def predict():
 
     # Create a DataFrame for the future dates
     future_df = pd.DataFrame(index=future_dates, columns=df.columns)
+
+    # Fill the future_df DataFrame with the last known price
     future_df['Close'] = df['Close'].iloc[-1]
 
     # Append the future_df to the original df
@@ -77,11 +86,35 @@ def predict():
 
 root = tk.Tk()
 root.geometry("300x200")
+root.title("Numera")
 
-label = tk.Label(root, text="Stock Prediction Program")
-label.pack()
+mainframe = ttk.Frame(root, padding="10")
+mainframe.grid(column=0, row=0, sticky=(tk.N, tk.W, tk.E, tk.S))
+mainframe.columnconfigure(0, weight=1)
+mainframe.rowconfigure(0, weight=1)
 
-button = tk.Button(root, text="Predict", command=predict)
-button.pack()
+label = ttk.Label(mainframe, text="Welcome to Numera!", font=("Helvetica", 16, "bold"))
+label.grid(column=1, row=1, sticky=(tk.W, tk.E))
+
+tickerSymbolLabel = ttk.Label(mainframe, text="Enter the ticker symbol:")
+tickerSymbolLabel.grid(column=1, row=2, sticky=tk.W)
+tickerSymbolEntry = ttk.Entry(mainframe)
+tickerSymbolEntry.grid(column=1, row=3, sticky=(tk.W, tk.E))
+
+forecastOutLabel = ttk.Label(mainframe, text="Enter the prediction period (in days):")
+forecastOutLabel.grid(column=1, row=4, sticky=tk.W)
+forecastOutEntry = ttk.Entry(mainframe)
+forecastOutEntry.grid(column=1, row=5, sticky=(tk.W, tk.E))
+
+displayDaysLabel = ttk.Label(mainframe, text="Enter the number of days to display:")
+displayDaysLabel.grid(column=1, row=6, sticky=tk.W)
+displayDaysEntry = ttk.Entry(mainframe)
+displayDaysEntry.grid(column=1, row=7, sticky=(tk.W, tk.E))
+
+button = ttk.Button(mainframe, text="Predict", command=predict)
+button.grid(column=1, row=8, sticky=tk.W)
+
+for child in mainframe.winfo_children(): 
+    child.grid_configure(padx=5, pady=5)
 
 root.mainloop()
